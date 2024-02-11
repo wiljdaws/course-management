@@ -1,21 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Course List</title>
+    <title>Dallas College Courses</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <style>
+        .description-column {
+            width: 33%;  /* Adjust this value as needed */
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="mb-4">Course List</h1>
+        <h1 class="mb-4">Dallas College Courses</h1>
 
         <table class="table table-striped">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Course Name</th>
-                    <th>Course Description</th>
+                    <th class="description-column">Course Description</th>
                     <th>Professor</th>
                     <th>Semester</th>
                     <th>Actions</th>
@@ -26,12 +32,16 @@
                 <tr>
                     <td>{{ course.id }}</td>
                     <td>{{ course.name }}</td>
-                    <td>{{ course.description }}</td>
+                    <td class="description-column">{{ course.description }}</td>
                     <td>{{ course.professor }}</td>
                     <td>{{ course.semester }}</td>
                     <td>
-                        <a href="/edit/{{ course.id }}" class="btn btn-primary">Edit</a>
-                        <a href="/delete/{{ course.id }}" class="btn btn-danger">Delete</a>
+                        <a href="/edit/{{ course.id }}" class="btn btn-primary">
+                            <i class="fas fa-pencil-alt"></i>
+                        </a>
+                        <a href="/delete/{{ course.id }}" class="btn btn-danger">
+                            <i class="fas fa-trash"></i>
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}
