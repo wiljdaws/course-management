@@ -12,8 +12,7 @@ A simple web application built with Flask for managing courses. It allows users 
 
 ### Prerequisites
 
-- Python 3.x installed on your system
-- pip package manager
+- Python 3.12 installed on your system
 
 ### Installation
 
