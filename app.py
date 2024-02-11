@@ -1,4 +1,3 @@
-# app.py
 import os
 from flask import Flask, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
@@ -11,17 +10,40 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'te
 db = SQLAlchemy(app)
 
 class Course(db.Model):
+    '''
+    Create a table named Course
+    
+    ---
+    - Columns:
+        - id (int): The id of the course.
+        - name (str): The name of the course.
+        - description (str): The description of the course.
+        - professor (str): The professor of the course.
+        - semester (str): The semester of the course.
+    '''
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     description = db.Column(db.String(200), nullable=False)
     professor = db.Column(db.String(50), nullable=False)
     semester = db.Column(db.String(50), nullable=False)
-    
-    with app.app_context():
-        db.create_all()
+
+with app.app_context():
+    '''
+    Create the table named Course if it doesn't exist.
+    '''
+    db.create_all()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    '''
+    This function will display the courses and a form to add a new course.
+    
+    ---
+    - GET:
+        This function will display the courses and a form to add a new course.
+    - POST:
+        This function will add a new course to the database and redirect to the index page.     
+    '''
     if request.method == 'POST':
         name = request.form.get('name')
         description = request.form.get('description')
@@ -40,6 +62,17 @@ def index():
     
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 def edit(id):
+    '''
+    This function will edit a course.
+    
+    ---
+    - Args:
+       - id (int): The id of the course to edit.
+    - GET:
+       - This function will display the course to edit.
+    - POST:
+       - This function will update the course and redirect to the index page.
+    '''
     course = Course.query.get(id)
     if course is None:
         return "Course not found", 404
@@ -54,6 +87,17 @@ def edit(id):
 
 @app.route('/delete/<int:id>', methods=['GET', 'POST'])
 def delete(id):
+    '''
+    This function will delete a course.
+    
+    ---
+    - Args:
+       - id (int): The id of the course to delete.
+    - GET:
+         - This function will display the course to delete.
+    - POST:
+        - This function will delete the course and redirect to the index page.
+    '''
     course = Course.query.get(id)
     if course is None:
         return "Course not found", 404
@@ -65,4 +109,3 @@ def delete(id):
 
 if __name__ == '__main__':
     app.run(debug=True)
-
