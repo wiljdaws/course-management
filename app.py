@@ -1,6 +1,6 @@
 from datetime import datetime
 import os
-from flask import Flask, flash, redirect, render_template, request, url_for, send_from_directory
+from flask import Flask, redirect, render_template, request, url_for, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
 basedir = os.path.abspath(os.path.dirname(__file__))
