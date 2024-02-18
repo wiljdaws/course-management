@@ -1,5 +1,6 @@
+from datetime import datetime
 import os
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request, url_for, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -12,101 +13,72 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 db = SQLAlchemy(app)
 
 
+class Professor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    courses = db.relationship('Course', backref='professor', lazy=True)
+
+
 class Course(db.Model):
-    '''
-    Create a table named Course
-    ---
-    - Columns:
-        - id (int): The id of the course.
-        - name (str): The name of the course.
-        - description (str): The description of the course.
-        - professor (str): The professor of the course.
-        - semester (str): The semester of the course.
-    '''
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     description = db.Column(db.String(200), nullable=False)
-    professor = db.Column(db.String(50), nullable=False)
+    professor_id = db.Column(db.Integer, db.ForeignKey('professor.id'), nullable=False)
     semester = db.Column(db.String(50), nullable=False)
 
-
 with app.app_context():
-    '''
-    Create the table named Course if it doesn't exist.
-    '''
     db.create_all()
 
+@app.route('/')
+def home():
+    return render_template('home.html')
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/media/<path:filename>')
+def serve_media(filename):
+    return send_from_directory(os.path.join(os.getcwd(), 'tmp'), filename)
+
+
+@app.route('/courses', methods=['GET', 'POST'])
 def index():
-    '''
-    This function will display the courses
-    and a form to add a new course.
-    ---
-    - GET:
-        This function will display the courses
-        and a form to add a new course.
-    - POST:
-        This function will add a new course
-        to the database and redirect to the index page.
-    '''
     if request.method == 'POST':
         name = request.form.get('name')
         description = request.form.get('description')
-        professor = request.form.get('professor')
-        semester = request.form.get('semester')
+        professor_id = request.form.get('professor_id')
+        semester_type = request.form.get('semester_type')
+        semester_year = request.form.get('semester_year')
 
-        if name and description and professor and semester:
+        if name and description and professor_id and semester_type and semester_year:
+            semester = f"{semester_type} {semester_year}"
             course = Course(name=name, description=description,
-                            professor=professor, semester=semester)
+                            professor_id=professor_id, semester=semester)
             db.session.add(course)
             db.session.commit()
 
-        return redirect('/')
+        return redirect('/courses')
     else:
         courses = Course.query.all()
-        return render_template('index.html', courses=courses)
+        professors = Professor.query.all()
+        current_year = datetime.now().year
+        return render_template('courses.html', courses=courses, professors=professors, current_year=current_year)
 
 
-@app.route('/edit/<int:id>', methods=['GET', 'POST'])
+@app.route('/edit_course/<int:id>', methods=['GET', 'POST'])
 def edit(id):
-    '''
-    This function will edit a course.
-    ---
-    - Args:
-       - id (int): The id of the course to edit.
-    - GET:
-       - This function will display the course to edit.
-    - POST:
-       - This function will update the course
-         in the database and redirect to the index page.
-    '''
     course = Course.query.get(id)
     if course is None:
         return "Course not found", 404
     if request.method == 'POST':
         course.name = request.form.get('name')
         course.description = request.form.get('description')
-        course.professor = request.form.get('professor')
+        course.professor_id = request.form.get('professor_id')
         course.semester = request.form.get('semester')
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template('edit.html', course=course)
+    return render_template('edit_course.html', course=course)
 
 
-@app.route('/delete/<int:id>', methods=['GET', 'POST'])
+@app.route('/delete_course/<int:id>', methods=['GET', 'POST'])
 def delete(id):
-    '''
-    This function will delete a course.
-    ---
-    - Args:
-       - id (int): The id of the course to delete.
-    - GET:
-         - This function will display the course to delete.
-    - POST:
-        - This function will delete the course
-          and redirect to the index page.
-    '''
     course = Course.query.get(id)
     if course is None:
         return "Course not found", 404
@@ -114,7 +86,46 @@ def delete(id):
         db.session.delete(course)
         db.session.commit()
         return redirect(url_for('index'))
-    return render_template('delete.html', course=course)
+    return render_template('delete_course.html', course=course)
+
+
+@app.route('/professors', methods=['GET', 'POST'])
+def professors():
+    if request.method == 'POST':
+        name = request.form.get('name')
+
+        if name:
+            professor = Professor(name=name)
+            db.session.add(professor)
+            db.session.commit()
+
+        return redirect('/courses')
+    else:
+        professors = Professor.query.all()
+        return render_template('professors.html', professors=professors)
+
+@app.route('/edit_professor/<int:id>', methods=['GET', 'POST'])
+def edit_professor(id):
+    professor = Professor.query.get(id)
+    if professor is None:
+        return "Professor not found", 404
+    if request.method == 'POST':
+        professor.name = request.form.get('name')
+        db.session.commit()
+        return redirect(url_for('professors'))
+    return render_template('edit_professor.html', professor=professor)
+
+
+@app.route('/delete_professor/<int:id>', methods=['GET', 'POST'])
+def delete_professor(id):
+    professor = Professor.query.get(id)
+    if professor is None:
+        return "Professor not found", 404
+    if request.method == 'POST':
+        db.session.delete(professor)
+        db.session.commit()
+        return redirect(url_for('professors'))
+    return render_template('delete_professor.html', professor=professor)
 
 
 if __name__ == '__main__':
