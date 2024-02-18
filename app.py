@@ -93,7 +93,7 @@ def delete(id):
     if request.method == 'POST':
         db.session.delete(course)
         db.session.commit()
-        return redirect(url_for('courses'))
+        return redirect('/courses')
     return render_template('delete_course.html', course=course)
 
 
