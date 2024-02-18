@@ -1,6 +1,3 @@
-Apologies for the confusion. It seems like the script syntax is still not correct for PowerShell. Let's try a different approach. We can use the `Test-Path` cmdlet in PowerShell to check for the existence of the `requirements.txt` file. Here's the corrected version:
-
-```yaml
 name: Python package
 
 on:
@@ -34,6 +31,3 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
-```
-
-This should correctly check for the existence of `requirements.txt` using PowerShell syntax. If the file exists, it will proceed to install the requirements, otherwise, it will skip that step.
