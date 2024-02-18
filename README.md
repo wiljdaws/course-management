@@ -1,4 +1,4 @@
-# DCCCD Course Management System 
+# Course Management System 
 
 A simple web application built with Flask for managing courses. It allows users to add new courses, view existing courses, and edit course details.
 
