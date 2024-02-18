@@ -1,6 +1,6 @@
 from datetime import datetime
 import os
-from flask import Flask, redirect, render_template, request, url_for, send_from_directory
+from flask import Flask, flash, redirect, render_template, request, url_for, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -63,18 +63,26 @@ def index():
 
 
 @app.route('/edit_course/<int:id>', methods=['GET', 'POST'])
-def edit(id):
-    course = Course.query.get(id)
-    if course is None:
-        return "Course not found", 404
+def edit_course(id):
+    course = Course.query.get_or_404(id)
+    professors = Professor.query.all()  # Fetch all professors
+    
     if request.method == 'POST':
-        course.name = request.form.get('name')
-        course.description = request.form.get('description')
-        course.professor_id = request.form.get('professor_id')
-        course.semester = request.form.get('semester')
-        db.session.commit()
-        return redirect(url_for('index'))
-    return render_template('edit_course.html', course=course)
+        course.name = request.form['name']
+        course.description = request.form['description']
+        course.semester = request.form['semester']
+        professor_id = request.form.get('professor_id')
+        if professor_id:
+            course.professor_id = professor_id
+        else:
+            return render_template('edit_course.html', course=course, professors=professors, message='The professor_id field is required.', current_year=current_year)
+        try:
+            db.session.commit()
+            return redirect('/courses')
+        except:
+            return render_template('edit_course.html', course=course, professors=professors, message='There was an issue updating your course')
+    else:
+        return render_template('edit_course.html', course=course, professors=professors)
 
 
 @app.route('/delete_course/<int:id>', methods=['GET', 'POST'])
@@ -116,16 +124,17 @@ def edit_professor(id):
     return render_template('edit_professor.html', professor=professor)
 
 
-@app.route('/delete_professor/<int:id>', methods=['GET', 'POST'])
-def delete_professor(id):
-    professor = Professor.query.get(id)
-    if professor is None:
-        return "Professor not found", 404
-    if request.method == 'POST':
-        db.session.delete(professor)
-        db.session.commit()
-        return redirect(url_for('professors'))
-    return render_template('delete_professor.html', professor=professor)
+@app.route('/delete_professor/<int:professor_id>', methods=['POST'])
+def delete_professor(professor_id):
+    professor_to_delete = Professor.query.get(professor_id)
+    error_message = None
+    if professor_to_delete:
+        if professor_to_delete.courses: # to work on later, not working yet
+            error_message = 'Cannot delete professor. They are still assigned to a course.'
+        else:
+            db.session.delete(professor_to_delete)
+            db.session.commit()
+    return render_template('delete_professor.html', error_message=error_message)
 
 
 if __name__ == '__main__':

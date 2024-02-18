@@ -36,8 +36,19 @@
                         <h2>Delete Professor</h2>
                     </div>
                     <div class="card-body">
+                        {% if error_message %}
+                            <div class="alert alert-danger">
+                                {{ error_message }}
+                            </div>
+                        {% endif %}
                         <p>Are you sure you want to delete professor- {{ professor.name}}?</p>
                         <form method="POST">
+                            {% for professor in professors %}
+                                        <option value="{{ professor.id }}"
+                                            {% if professor.id == course.professor_id %} selected {% endif %}>
+                                            {{ professor.name }}
+                                        </option>
+                                    {% endfor %}
                             <input type="hidden" name="id" value="{{ professor.id }}">
                             <button type="submit" class="btn btn-danger">Yes, delete</button>
                             <a href="{{ url_for('index') }}" class="btn btn-secondary">No, take me back</a>
