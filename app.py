@@ -66,7 +66,7 @@ def index():
 def edit_course(id):
     course = Course.query.get_or_404(id)
     professors = Professor.query.all()  # Fetch all professors
-    
+    current_year = datetime.now().year
     if request.method == 'POST':
         course.name = request.form['name']
         course.description = request.form['description']
