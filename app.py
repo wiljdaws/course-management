@@ -93,7 +93,7 @@ def delete(id):
     if request.method == 'POST':
         db.session.delete(course)
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('courses'))
     return render_template('delete_course.html', course=course)
 
 
@@ -106,8 +106,7 @@ def professors():
             professor = Professor(name=name)
             db.session.add(professor)
             db.session.commit()
-
-        return redirect('/courses')
+        return redirect(url_for('professors'))
     else:
         professors = Professor.query.all()
         return render_template('professors.html', professors=professors)
@@ -124,17 +123,19 @@ def edit_professor(id):
     return render_template('edit_professor.html', professor=professor)
 
 
-@app.route('/delete_professor/<int:professor_id>', methods=['POST'])
-def delete_professor(professor_id):
-    professor_to_delete = Professor.query.get(professor_id)
+@app.route('/delete_professor/<int:id>', methods=['GET','POST'])
+def delete_professor(id):
+    professor = Professor.query.get(id)
     error_message = None
-    if professor_to_delete:
-        if professor_to_delete.courses: # to work on later, not working yet
+    if professor:
+        if professor.courses: # to work on later, not working yet
             error_message = 'Cannot delete professor. They are still assigned to a course.'
         else:
-            db.session.delete(professor_to_delete)
-            db.session.commit()
-    return render_template('delete_professor.html', error_message=error_message)
+            if request.method == 'POST':
+                db.session.delete(professor)
+                db.session.commit()
+                return redirect(url_for('professors'))
+        return render_template('delete_professor.html', professor=professor, error_message=error_message)
 
 
 if __name__ == '__main__':
